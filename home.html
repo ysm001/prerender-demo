@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Prerendering Demo</title>
+    <style>
+       /* Styles for loading spinner */
+       html[loading="true"] .spinner {
+         display: block;
+       }
+       .spinner {
+         display: none;
+         width: 30px;
+         height: 30px;
+         border-radius: 50%;
+         border: 8px solid #17cddd;
+         border-right-color: transparent;
+
+         position: absolute;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         margin: auto;
+         width: 100px;
+         height: 100px;
+       }
+      .spinner {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg);   opacity: 0.2; }
+        50%  { transform: rotate(180deg); opacity: 1.0; }
+        100%   { transform: rotate(360deg); opacity: 0.2; }
+      }
+    </style>
+    <script>
+      function onPrerenderStart() {
+        console.log('prerender start');
+        document.documentElement.setAttribute('loading', true);
+      }
+      function onPrerender(el) {
+        console.log('prerender complete');
+        location.href = el.target.href;
+      }
+
+      document.addEventListener('click', function(e) {
+        if (!e.target.matches('a.prerender')) return;
+        e.preventDefault();
+        var linkel = document.createElement('link');
+        linkel.rel = 'prerender';
+        linkel.href = e.target.href;
+        /* This does not work. vendor prefix is required */
+        // linkel.onload = onPrerender;
+
+        /* Bind prerender event handlers */
+        linkel.addEventListener('webkitprerenderload', onPrerender, false)
+        linkel.addEventListener('webkitprerenderstart', onPrerenderStart, false);
+        linkel.addEventListener('webkitprerenderdomcontentloaded', function() {console.log('document loaded')}, false);
+        linkel.addEventListener('webkitprerenderstop', function() {console.log('stop')}, false);
+        linkel.addEventListener('webkitprerendererror', function() {console.log('error')}, false);
+
+        document.head.appendChild(linkel);
+      });
+    </script>
+  </head>
+
+  <body>
+    <a href='article.html' class='prerender'>Go to an article, one of many</a>
+    <div class="spinner"></div>
+  </body>
+</html>
